@@ -1,0 +1,12 @@
+node_modules
+dist
+coverage
+.env
+.env.*.local
+logs
+*.log
+.DS_Store
+
+# MikroORM snapshot (snapshot disabled in config — introspect DB trực tiếp)
+src/configs/database/migrations/.snapshot.json
+src/configs/database/migrations/.snapshot.*.json
