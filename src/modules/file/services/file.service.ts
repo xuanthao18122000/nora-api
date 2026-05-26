@@ -17,6 +17,15 @@ import { ListFileDto } from "../dtos";
 const CDN_OBJECT = "products";
 const CDN_OBJECT_ID = "1";
 
+/**
+ * Shape của mỗi item trong `response.data.data` mà CDN upload API trả về.
+ * `original` là relative path (vd `files/products/2026/4/20/1/abc.png`),
+ * cần ghép với CDN base URL để thành FULL URL lưu vào DB.
+ */
+interface CDNUploadResult {
+    original: string;
+}
+
 @Injectable()
 export class FileService {
     private readonly logger = new Logger(FileService.name);
@@ -127,8 +136,24 @@ export class FileService {
                 throw new HttpException("Upload không thành công, CDN không phản hồi", 500);
             }
 
-            const result = (response.data.data as string[]) ?? [];
-            return Array.isArray(result) ? result : [];
+            // CDN trả về `data` là mảng object { original: "<relative-path>" }.
+            // Ghép `original` với CDN base URL (tránh double slash) để lưu FULL URL.
+            const items = (response.data.data as CDNUploadResult[]) ?? [];
+            if (!Array.isArray(items)) return [];
+
+            const baseUrl = CDNConfig.getCdnBaseUrl();
+            return items
+                .map((item) => item?.original)
+                .filter(
+                    (original): original is string =>
+                        typeof original === "string" && original.length > 0,
+                )
+                .map((original) => {
+                    const normalized = original.startsWith("/")
+                        ? original.slice(1)
+                        : original;
+                    return `${baseUrl}/${normalized}`;
+                });
         } catch (error: unknown) {
             this.handleAxiosError(error, "Có lỗi xảy ra khi upload file");
         }

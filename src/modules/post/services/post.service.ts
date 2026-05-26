@@ -57,6 +57,7 @@ export class PostService {
     }
 
     async findAll(query: ListPostDto) {
+        console.log('query', query);
         const qb = this.em
             .createQueryBuilder(Post, "post")
             .fSetQuery(query)
@@ -85,6 +86,7 @@ export class PostService {
         }
 
         const [items, total] = await qb.getResultAndCount();
+        console.log('items', items);
         if (items.length > 0) {
             await this.em.populate(items, ["postList"]);
         }

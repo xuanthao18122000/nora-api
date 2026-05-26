@@ -52,6 +52,19 @@ export class CDNConfig {
     }
 
     /**
+     * @description: Lấy public CDN base URL (đã strip trailing slash) — dùng để ghép
+     * với relative path (`original`) mà CDN upload API trả về thành FULL URL.
+     * Đọc từ env `CDN_URL` (vd `https://cdn-v2.didongviet.vn`).
+     */
+    static getCdnBaseUrl(): string {
+        const url = env.CDN_URL;
+        if (!url) {
+            throw new BadRequestException("CDN_URL chưa được cấu hình!");
+        }
+        return url.endsWith("/") ? url.slice(0, -1) : url;
+    }
+
+    /**
      * @description: Lấy Auth UUID cho CDN (bắt buộc)
      */
     static getAuthUuid(): string {
